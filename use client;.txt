@@ -1,0 +1,287 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import confetti from "canvas-confetti";
+import { FaHeart, FaChevronDown } from "react-icons/fa";
+import { Sparkles, Mail, Check, MapPin, X } from "lucide-react";
+
+// --- DATA STRUCTURES ---
+const LOVE_START_DATE = new Date("2023-08-01T00:00:00");
+
+const MILESTONES = [
+  { id: "1", title: "The First Hello", date: "Aug 1, 2023", description: "Our first conversation that changed everything." },
+  { id: "2", title: "Late Night Talks", date: "Sep 14, 2023", description: "Talking for hours until sunrise." },
+  { id: "3", title: "First Coffee Date", date: "Oct 20, 2023", description: "Warm coffee and nervous butterflies." },
+  { id: "4", title: "Best Friends & Partners", date: "Dec 25, 2023", description: "Realizing you were my person." },
+];
+
+const PHOTOS = [
+  { id: "p1", caption: "Sunset walk", location: "Beach", date: "Summer", imageUrl: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800", rotation: -4 },
+  { id: "p2", caption: "Coffee dates", location: "Cafe", date: "Autumn", imageUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800", rotation: 3 },
+  { id: "p3", caption: "Your smile", location: "Park", date: "Spring", imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=800", rotation: -2 },
+  { id: "p4", caption: "Adventures", location: "Mountains", date: "Winter", imageUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=800", rotation: 5 },
+];
+
+const REASONS = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  reason: `Reason #${i + 1}: Your beautiful smile brightens every single day!`,
+}));
+
+const LETTERS = [
+  { id: "1", title: "A Little Reminder", content: "You will always be my favorite thought.", date: "Just Now" },
+  { id: "2", title: "My Safe Haven", content: "Your embrace is my favorite place in the world.", date: "Always" },
+  { id: "3", title: "To My Best Friend", content: "Thank you for loving me as I am.", date: "Forever" },
+  { id: "4", title: "Our Future", content: "I look forward to every moment yet to come.", date: "Eternity" },
+];
+
+const PROMISES = [
+  "I promise to always listen with an open heart.",
+  "I promise to make you laugh when life feels heavy.",
+  "I promise to support your biggest dreams.",
+  "I promise to hold your hand through everything.",
+];
+
+// --- MAIN COMPONENT ---
+export default function Home() {
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [flipped, setFlipped] = useState<Record<number, boolean>>({});
+  const [blooms, setBlooms] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [activeLetter, setActiveLetter] = useState<typeof LETTERS[0] | null>(null);
+  const [surpriseOpen, setSurpriseOpen] = useState(false);
+
+  // Loading Progress
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          setTimeout(() => setLoading(false), 500);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 30);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Typing Effect
+  useEffect(() => {
+    if (loading) return;
+    const fullText = "Happy Girlfriend Day ❤️";
+    let i = 0;
+    const timer = setInterval(() => {
+      setTypedText(fullText.slice(0, i));
+      i++;
+      if (i > fullText.length) clearInterval(timer);
+    }, 90);
+    return () => clearInterval(timer);
+  }, [loading]);
+
+  // Timer
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = Math.max(0, Math.floor((now.getTime() - LOVE_START_DATE.getTime()) / 1000));
+      setTime({
+        days: Math.floor(diff / (3600 * 24)),
+        hours: Math.floor((diff % (3600 * 24)) / 3600),
+        minutes: Math.floor((diff % 3600) / 60),
+        seconds: diff % 60,
+      });
+    };
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleGardenClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setBlooms((prev) => [...prev.slice(-15), { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+  };
+
+  const triggerConfetti = () => {
+    setSurpriseOpen(true);
+    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+  };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FFF8FC]">
+        <motion.div animate={{ scale: [1, 1.25, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-[#FF4D8D] text-6xl">
+          <FaHeart />
+        </motion.div>
+        <p className="mt-6 font-serif text-lg text-[#222222]">Loading our memories...</p>
+        <div className="mt-4 h-1.5 w-64 overflow-hidden rounded-full bg-[#FF7EB3]/20">
+          <div className="h-full bg-[#FF4D8D] transition-all duration-100" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen w-full bg-[#FFF8FC] text-[#222222] flex flex-col items-center overflow-x-hidden">
+      
+      {/* SECTION 2: HERO */}
+      <section className="relative flex min-h-screen w-full flex-col items-center justify-center px-4 text-center">
+        <h1 className="font-serif text-4xl sm:text-6xl font-bold text-[#222222] min-h-[1.2em]">
+          {typedText}<span className="animate-pulse text-[#FF4D8D]">|</span>
+        </h1>
+        <p className="mt-6 text-base sm:text-xl text-[#665A65] max-w-lg">
+          This website was made for <span className="font-semibold text-[#FF4D8D]">only one person</span> in the world.
+        </p>
+        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.8, repeat: Infinity }} className="absolute bottom-8 text-[#FF4D8D]">
+          <FaChevronDown />
+        </motion.div>
+      </section>
+
+      {/* SECTION 3: STORY TIMELINE */}
+      <section className="relative w-full max-w-4xl px-4 py-20">
+        <h2 className="text-center font-serif text-3xl sm:text-5xl font-bold mb-12">Our Journey</h2>
+        <div className="space-y-6">
+          {MILESTONES.map((m) => (
+            <motion.div key={m.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white/70 backdrop-blur-md p-6 rounded-2xl border border-white/80 shadow-sm">
+              <span className="text-xs font-mono text-[#FF4D8D]">{m.date}</span>
+              <h3 className="font-serif text-xl font-bold mt-1">{m.title}</h3>
+              <p className="mt-2 text-sm text-[#665A65]">{m.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 4: FLOATING PHOTO GALLERY */}
+      <section className="relative w-full max-w-6xl px-4 py-20">
+        <h2 className="text-center font-serif text-3xl sm:text-5xl font-bold mb-12">Polaroid Memories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {PHOTOS.map((p) => (
+            <motion.div key={p.id} whileHover={{ scale: 1.05, rotate: 0 }} className="bg-white p-4 rounded shadow-md border border-slate-100" style={{ transform: `rotate(${p.rotation}deg)` }}>
+              <img src={p.imageUrl} alt={p.caption} className="aspect-[4/5] w-full object-cover rounded-sm" />
+              <p className="mt-4 text-center font-serif text-xl">{p.caption}</p>
+              <div className="flex items-center justify-center gap-1 text-xs text-[#665A65] mt-1">
+                <MapPin className="h-3 w-3 text-[#FF4D8D]" /> <span>{p.location}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 5: LOVE COUNTER */}
+      <section className="relative w-full max-w-4xl px-4 py-20 text-center">
+        <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-white/80 shadow-sm">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-8">Together For</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Object.entries(time).map(([k, v]) => (
+              <div key={k} className="bg-white p-4 rounded-2xl shadow-sm">
+                <span className="font-serif text-4xl font-bold text-[#FF4D8D]">{v}</span>
+                <p className="text-xs uppercase font-mono text-[#665A65] mt-1">{k}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: REASONS I LOVE YOU */}
+      <section className="relative w-full max-w-6xl px-4 py-20 text-center">
+        <h2 className="font-serif text-3xl sm:text-5xl font-bold mb-8">100 Reasons Why I Love You</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2">
+          {REASONS.map((r) => (
+            <div key={r.id} onClick={() => setFlipped((p) => ({ ...p, [r.id]: !p[r.id] }))} className="h-20 bg-white border border-[#FF7EB3]/20 rounded-xl flex items-center justify-center p-2 cursor-pointer text-xs font-medium hover:border-[#FF4D8D]">
+              {flipped[r.id] ? <span className="text-[#FF4D8D]">{r.reason}</span> : <span>#{r.id}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 7: HEART GARDEN */}
+      <section className="relative w-full max-w-4xl px-4 py-20 text-center">
+        <h2 className="font-serif text-3xl font-bold mb-4">Click to Bloom Hearts</h2>
+        <div onClick={handleGardenClick} className="relative h-64 w-full bg-white/60 rounded-3xl border border-[#FF4D8D]/20 overflow-hidden cursor-pointer flex items-center justify-center">
+          <span className="text-[#665A65] flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#FF4D8D]" /> Tap anywhere in this box...</span>
+          {blooms.map((b) => (
+            <FaHeart key={b.id} className="absolute text-[#FF4D8D] text-2xl animate-ping" style={{ left: b.x, top: b.y }} />
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 8: SECRET LETTERS */}
+      <section className="relative w-full max-w-4xl px-4 py-20 text-center">
+        <h2 className="font-serif text-3xl font-bold mb-8">Secret Love Letters</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {LETTERS.map((l) => (
+            <div key={l.id} onClick={() => setActiveLetter(l)} className="bg-white/70 backdrop-blur-md p-6 rounded-2xl cursor-pointer hover:border-[#FF4D8D] border border-white/80 shadow-sm flex flex-col items-center">
+              <Mail className="h-6 w-6 text-[#FF4D8D] mb-2" />
+              <h3 className="font-serif font-bold text-lg">{l.title}</h3>
+              <p className="text-xs text-[#FF4D8D] mt-2">Click to open 💌</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 9: PROMISES */}
+      <section className="relative w-full max-w-3xl px-4 py-20">
+        <h2 className="text-center font-serif text-3xl font-bold mb-8">Promises I Keep</h2>
+        <div className="bg-amber-50/80 p-8 rounded-3xl border border-amber-200/60 space-y-4">
+          {PROMISES.map((promise, idx) => (
+            <div key={idx} className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-[#FF4D8D]" />
+              <p className="font-serif text-xl">{promise}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 10: FINAL LETTER */}
+      <section className="relative w-full max-w-2xl px-4 py-20 text-center">
+        <div className="bg-white/80 backdrop-blur-md p-8 sm:p-12 rounded-3xl border border-white/90 shadow-sm">
+          <span className="font-serif text-2xl text-[#FF4D8D]">Dearest Love,</span>
+          <p className="mt-4 font-serif text-lg leading-relaxed">
+            Thank you for turning ordinary moments into lifelong memories. Every single day with you is a gift I will never take for granted.
+          </p>
+          <div className="mt-6 font-serif text-2xl text-[#FF4D8D]">Always & Forever ❤️</div>
+        </div>
+      </section>
+
+      {/* SECTION 11: FINAL SURPRISE */}
+      <section className="relative w-full max-w-2xl px-4 py-20 text-center">
+        <button onClick={triggerConfetti} className="bg-gradient-to-r from-[#FF4D8D] to-[#FF7EB3] text-white font-bold px-8 py-4 rounded-full shadow-md hover:scale-105 transition-all">
+          Don&apos;t Click This Button
+        </button>
+      </section>
+
+      {/* SECTION 12: ENDING */}
+      <footer className="w-full bg-slate-950 text-white py-24 px-4 text-center mt-auto">
+        <FaHeart className="text-[#FF4D8D] text-4xl mx-auto mb-4 animate-bounce" />
+        <h2 className="font-serif text-4xl font-bold">Happy Girlfriend Day ❤️</h2>
+        <p className="mt-2 font-serif text-slate-300 italic">&ldquo;Thank you for existing. I love you.&rdquo;</p>
+      </footer>
+
+      {/* MODALS */}
+      <AnimatePresence>
+        {activeLetter && (
+          <div onClick={() => setActiveLetter(null)} className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-8 rounded-3xl max-w-md text-center relative">
+              <button onClick={() => setActiveLetter(null)} className="absolute right-4 top-4 text-slate-400"><X className="h-5 w-5" /></button>
+              <h3 className="font-serif text-2xl font-bold">{activeLetter.title}</h3>
+              <p className="mt-4 italic font-serif text-lg">&ldquo;{activeLetter.content}&rdquo;</p>
+            </div>
+          </div>
+        )}
+
+        {surpriseOpen && (
+          <div onClick={() => setSurpriseOpen(false)} className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-8 rounded-3xl text-center max-w-sm relative">
+              <div className="text-5xl mb-4">💖🥳✨</div>
+              <h3 className="font-serif text-2xl font-bold">You are amazing!</h3>
+              <p className="mt-2 text-sm text-[#665A65]">Happy Girlfriend Day to my favorite person!</p>
+              <button onClick={() => setSurpriseOpen(false)} className="mt-6 bg-[#FF4D8D] text-white px-6 py-2 rounded-full text-sm">Close</button>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
